@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.1.5.RELEASE</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>com.myself.versioning</groupId>
+    <artifactId>test-springboot-versioning-demo</artifactId>
+    <version>1.0-releases</version>
+
+    <properties>
+        <java.version>1.8</java.version>
+        <dm.release.id>releases</dm.release.id>
+        <dm.release.url>http://192.168.56.191:8081/repository/maven-releases/</dm.release.url>
+        <dm.snapshot.id>snapshots</dm.snapshot.id>
+        <dm.snapshot.url>http://192.168.56.191:8081/repository/maven-snapshots/</dm.snapshot.url>
+        <docker.host>http://192.168.56.190:2375</docker.host>
+        <docker.repository>192.168.56.190:8082</docker.repository>
+        <sonar.login>c555569fdee3f9fa4b4d5cf45fe7bac12bde35e4</sonar.login>
+        <sonar.password></sonar.password>
+        <sonar.host.url>http://localhost:9000</sonar.host.url>
+    </properties>
+    <distributionManagement>
+        <repository>
+            <id>${dm.release.id}</id>
+            <url>${dm.release.url}</url>
+        </repository>
+        <snapshotRepository>
+            <id>${dm.snapshot.id}</id>
+            <url>${dm.snapshot.url}</url>
+        </snapshotRepository>
+    </distributionManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/net.logstash.logback/logstash-logback-encoder -->
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>5.3</version>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <!-- 添加docker-maven插件 -->
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>0.4.13</version>
+                <configuration>
+                    <!-- docker.host就是docker服务的地址 -->
+                    <dockerHost>${docker.host}</dockerHost>
+                    <serverId>docker-releases</serverId>
+                    <!-- docker.repository就是私服的地址 -->
+                    <imageName>${docker.repository}/${project.artifactId}:${project.version}</imageName>
+                    <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
+                    <buildArgs>
+                        <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
+                    </buildArgs>
+                    <resources>
+                        <resource>
+                            <targetPath>/</targetPath>
+                            <directory>${project.build.directory}</directory>
+                            <include>${project.build.finalName}.jar</include>
+                        </resource>
+                    </resources>
+                    <forceTags>true</forceTags>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>3.5.0.1254</version>
+            </plugin>
+        </plugins>
+    </build>
+</project>
